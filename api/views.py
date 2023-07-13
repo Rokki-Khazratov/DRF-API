@@ -6,8 +6,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 
-from prod.models import Product
-from prod.serializers import ProductSerializer
+from products.models import Product
+from products.serializers import ProductSerializer
 
 
 @api_view(["GET"])
