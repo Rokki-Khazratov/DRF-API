@@ -1,6 +1,7 @@
-from rest_framework import generics
+from rest_framework import generics,permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -14,6 +15,8 @@ class ProductListAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     pagination_class = LimitOffsetPagination
+    # permission_classes = [permissions.IsAuthenticatedorReadOnly]
+
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -69,3 +72,13 @@ def product_alt_view(request, pk=None, *args, **kwargs):
             serializer.save(content=content)
             return Response(serializer.data)
         return Response({"invalid": "not good data"}, status=400)
+    
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    action_methods = {'get': 'list', 'post': 'create'}
+
+    # The 'actions' argument is passed to .as_view()
+    def get_action_map(self):
+        return self.action_methods
