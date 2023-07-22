@@ -3,10 +3,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from rest_framework.pagination import LimitOffsetPagination
-
 # from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 
 from .models import Product
 from .serializers import ProductSerializer
@@ -14,16 +13,28 @@ from .serializers import ProductSerializer
 class ProductListAPIView(generics.ListAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    pagination_class = LimitOffsetPagination
-    # permission_classes = [permissions.IsAuthenticatedorReadOnly]
-
 
     def get_queryset(self):
         queryset = super().get_queryset()
         category_id = self.request.query_params.get('category')
         if category_id:
             queryset = queryset.filter(category_id=category_id)
-        return queryset.order_by('name')
+        return queryset.order_by('title') 
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Prepare the JSON response data
+        data = serializer.data
+
+        # Set the response headers to allow requests from localhost:8080
+        response = Response(data)
+        response["Access-Control-Allow-Origin"] = "http://localhost:8080"
+
+        return response
+
+
 
 product_list_view = ProductListAPIView.as_view()
 
@@ -79,6 +90,6 @@ class ProductViewSet(ModelViewSet):
 
     action_methods = {'get': 'list', 'post': 'create'}
 
-    # The 'actions' argument is passed to .as_view()
     def get_action_map(self):
         return self.action_methods
+
